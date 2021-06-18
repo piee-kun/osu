@@ -20,7 +20,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty
 {
     public class OsuDifficultyCalculator : DifficultyCalculator
     {
-        private const double difficulty_multiplier = 0.0675;
+        private const double difficulty_multiplier = 0.0660;
 
         public OsuDifficultyCalculator(Ruleset ruleset, WorkingBeatmap beatmap)
             : base(ruleset, beatmap)
@@ -34,7 +34,10 @@ namespace osu.Game.Rulesets.Osu.Difficulty
 
             double aimRating = Math.Sqrt(skills[0].DifficultyValue()) * difficulty_multiplier;
             double speedRating = Math.Sqrt(skills[1].DifficultyValue()) * difficulty_multiplier;
-            double starRating = aimRating + speedRating + Math.Abs(aimRating - speedRating) / 2;
+            var combinedStrain = ((StrainSkill)skills[0]).GetCurrentStrainPeaks()
+                                                         .Zip(((StrainSkill)skills[1]).GetCurrentStrainPeaks(), (x, y) => x + y);
+            double combinedRating = Math.Sqrt(DifficultyValue(combinedStrain, 0.9)) * difficulty_multiplier;
+            double starRating = Math.Sqrt(aimRating * aimRating + speedRating * speedRating + combinedRating * combinedRating);
 
             HitWindows hitWindows = new OsuHitWindows();
             hitWindows.SetDifficulty(beatmap.BeatmapInfo.BaseDifficulty.OverallDifficulty);
@@ -63,6 +66,22 @@ namespace osu.Game.Rulesets.Osu.Difficulty
                 SpinnerCount = spinnerCount,
                 Skills = skills
             };
+        }
+
+        public static double DifficultyValue(IEnumerable<double> strains, double decayWeight)
+        {
+            double difficulty = 0;
+            double weight = 1;
+
+            // Difficulty is the weighted sum of the highest strains from every section.
+            // We're sorting from highest to lowest strain.
+            foreach (double strain in strains.OrderByDescending(d => d))
+            {
+                difficulty += strain * weight;
+                weight *= decayWeight;
+            }
+
+            return difficulty;
         }
 
         protected override IEnumerable<DifficultyHitObject> CreateDifficultyHitObjects(IBeatmap beatmap, double clockRate)
