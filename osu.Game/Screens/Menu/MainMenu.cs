@@ -23,7 +23,6 @@ using osu.Game.Online.API;
 using osu.Game.Overlays;
 using osu.Game.Rulesets;
 using osu.Game.Screens.Backgrounds;
-using osu.Game.Screens.Edit;
 using osu.Game.Screens.OnlinePlay.Multiplayer;
 using osu.Game.Screens.OnlinePlay.Playlists;
 using osu.Game.Screens.Select;
@@ -45,6 +44,8 @@ namespace osu.Game.Screens.Menu
         public override bool AllowExternalScreenChange => true;
 
         private Screen songSelect;
+
+        private Screen editSongSelect;
 
         private MenuSideFlashes sideFlashes;
 
@@ -106,11 +107,7 @@ namespace osu.Game.Screens.Menu
                     {
                         Buttons = new ButtonSystem
                         {
-                            OnEdit = delegate
-                            {
-                                Beatmap.SetDefault();
-                                this.Push(new EditorLoader());
-                            },
+                            OnEdit = loadEditSongSelect,
                             OnSolo = loadSoloSongSelect,
                             OnMultiplayer = () => this.Push(new Multiplayer()),
                             OnPlaylists = () => this.Push(new Playlists()),
@@ -166,6 +163,8 @@ namespace osu.Game.Screens.Menu
         {
             if (songSelect == null)
                 LoadComponentAsync(songSelect = new PlaySongSelect());
+            if (editSongSelect == null)
+                LoadComponentAsync(editSongSelect = new EditSongSelect());
         }
 
         private void loadSoloSongSelect() => this.Push(consumeSongSelect());
@@ -174,6 +173,15 @@ namespace osu.Game.Screens.Menu
         {
             var s = songSelect;
             songSelect = null;
+            return s;
+        }
+
+        private void loadEditSongSelect() => this.Push(consumeEditSongSelect());
+
+        private Screen consumeEditSongSelect()
+        {
+            var s = editSongSelect;
+            editSongSelect = null;
             return s;
         }
 
