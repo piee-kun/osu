@@ -2,16 +2,16 @@
 // See the LICENCE file in the repository root for full licence text.
 
 using System;
-using System.Linq;
+using System.Collections.Generic;
 using osu.Framework.Allocation;
+using osu.Framework.Graphics.Containers;
 using osu.Framework.Graphics.UserInterface;
 using osu.Framework.Input.Events;
 using osu.Framework.Screens;
 using osu.Game.Beatmaps;
 using osu.Game.Graphics.UserInterface;
 using osu.Game.Resources.Localisation.Web;
-using osu.Game.Rulesets.Mods;
-using osu.Game.Screens.Play;
+using osu.Game.Screens.Edit.GameplayTest;
 using osu.Game.Users;
 using osuTK.Input;
 
@@ -64,28 +64,13 @@ namespace osu.Game.Screens.Select
 
         protected bool TestPlay()
         {
-            SampleConfirm?.Play();
-
-            this.Push(new PlayerLoader(createPlayer));
+            this.Push(new EditSelectPlayer());
             return true;
-
-            Player createPlayer()
-            {
-                Player player;
-
-                var replayGeneratingMod = Mods.Value.OfType<ICreateReplayData>().FirstOrDefault();
-
-                if (replayGeneratingMod != null)
-                {
-                    player = new ReplayPlayer((beatmap, mods) => replayGeneratingMod.CreateScoreFromReplayData(beatmap, mods));
-                }
-                else
-                {
-                    player = new SoloPlayer();
-                }
-
-                return player;
-            }
         }
+
+        protected override IEnumerable<(FooterButton, OverlayContainer)> CreateFooterButtons() => new (FooterButton, OverlayContainer)[]
+        {
+            (new FooterButtonOptions(), BeatmapOptions)
+        };
     }
 }
