@@ -49,12 +49,6 @@ namespace osu.Game.Screens.Edit.Compose.Components.Timeline
         private void load(OsuColour colours)
         {
             Color4 colour = GetRepresentingColour(colours);
-            var additionColours = new[]
-            {
-                colours.Yellow,
-                colours.Blue,
-                colours.Purple,
-            };
 
             AutoSizeAxes = Axes.X;
             Height = 40;
@@ -110,14 +104,38 @@ namespace osu.Game.Screens.Edit.Compose.Components.Timeline
 
             for (int i = 0; i < 3; i++)
             {
-                additionsContainer.Add(new Circle
+                var container = new Container
                 {
                     Anchor = Anchor.TopCentre,
                     Origin = Anchor.TopCentre,
                     Size = new Vector2(4),
-                    Colour = additionColours[i],
                     Y = i * 5,
+                    Colour = colour,
+                };
+
+                container.Add(i switch
+                {
+                    0 => new Circle
+                    {
+                        RelativeSizeAxes = Axes.Both,
+                    },
+                    1 => new Box
+                    {
+                        Anchor = Anchor.CentreLeft,
+                        Origin = Anchor.CentreLeft,
+                        RelativeSizeAxes = Axes.X,
+                        Height = 1,
+                    },
+                    _ => new Box
+                    {
+                        Anchor = Anchor.TopCentre,
+                        Origin = Anchor.TopCentre,
+                        RelativeSizeAxes = Axes.Y,
+                        Width = 1,
+                    }
                 });
+
+                additionsContainer.Add(container);
             }
 
             HitObject.DefaultsApplied += _ => updateVisual();
