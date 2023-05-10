@@ -17,7 +17,6 @@ using osu.Framework.Graphics.UserInterface;
 using osu.Framework.Input.Events;
 using osu.Game.Audio;
 using osu.Game.Graphics;
-using osu.Game.Graphics.Sprites;
 using osu.Game.Graphics.UserInterface;
 using osu.Game.Graphics.UserInterfaceV2;
 using osu.Game.Rulesets.Objects;
@@ -34,10 +33,9 @@ namespace osu.Game.Screens.Edit.Compose.Components.Timeline
         public readonly HitObject HitObject;
 
         private Container volumeBar = null!;
-        private FillFlowContainer additionsContainer = null!;
+        private Container additionsContainer = null!;
 
-        private Color4 enabledColor;
-        private Color4 disabledColor;
+        private Dictionary<string, Color4> bankColors = null!;
 
         protected virtual Color4 GetRepresentingColour(OsuColour colours) => colours.Pink;
 
@@ -50,8 +48,13 @@ namespace osu.Game.Screens.Edit.Compose.Components.Timeline
         private void load(OsuColour colours)
         {
             Color4 colour = GetRepresentingColour(colours);
-            enabledColor = colours.PinkLight;
-            disabledColor = new Color4(0, 0, 0, 0);
+
+            bankColors = new Dictionary<string, Color4>
+            {
+                { "normal", colours.Yellow },
+                { "soft", colours.Pink },
+                { "drum", colours.Purple },
+            };
 
             AutoSizeAxes = Axes.X;
             Height = 40;
@@ -77,16 +80,17 @@ namespace osu.Game.Screens.Edit.Compose.Components.Timeline
                         }
                     }
                 },
-                additionsContainer = new FillFlowContainer
+                additionsContainer = new Container
                 {
                     Anchor = Anchor.TopLeft,
                     Origin = Anchor.TopLeft,
                     X = 5,
                     RelativeSizeAxes = Axes.Y,
                     AutoSizeAxes = Axes.X,
-                    Direction = FillDirection.Vertical
                 }
             };
+
+            int i = 0;
 
             foreach (string sampleName in HitSampleInfo.HIT_NORMAL.Yield().Concat(HitSampleInfo.AllAdditions))
             {
@@ -100,17 +104,10 @@ namespace osu.Game.Screens.Edit.Compose.Components.Timeline
                     Anchor = Anchor.TopCentre,
                     Origin = Anchor.TopCentre,
                     Size = new Vector2(16, 8),
-                    Colour = disabledColor,
+                    Y = i++ * 8,
                     Children = new[]
                     {
-                        icon,
-                        new OsuSpriteText
-                        {
-                            Anchor = Anchor.TopLeft,
-                            Origin = Anchor.TopLeft,
-                            Font = OsuFont.Default.With(size: 8, weight: FontWeight.SemiBold),
-                            X = 9
-                        }
+                        icon
                     }
                 });
             }
@@ -136,8 +133,16 @@ namespace osu.Game.Screens.Edit.Compose.Components.Timeline
             {
                 var sample = samples.FirstOrDefault(s => s.Name == sampleName);
                 var container = (Container)additionsContainer.Children[i++];
-                container.Colour = sample is not null ? enabledColor : disabledColor;
-                ((OsuSpriteText)container.Children[1]).Text = abbreviateBank(sample?.Bank) ?? string.Empty;
+
+                if (sample is not null)
+                {
+                    container.Show();
+                    container.Colour = sample.Bank is not null && bankColors.TryGetValue(sample.Bank, out var colour) ? colour : Color4.White;
+                }
+                else
+                {
+                    container.Hide();
+                }
             }
         }
 
