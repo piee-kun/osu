@@ -51,7 +51,7 @@ namespace osu.Game.Screens.Edit.Compose.Components.Timeline
         {
             Color4 colour = GetRepresentingColour(colours);
             enabledColor = colours.PinkLight;
-            disabledColor = colours.PinkDarker;
+            disabledColor = new Color4(0, 0, 0, 0);
 
             AutoSizeAxes = Axes.X;
             Height = 40;
