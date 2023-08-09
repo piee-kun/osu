@@ -152,6 +152,8 @@ namespace osu.Game.Screens.Edit
         [CanBeNull] // Should be non-null once it can support custom rulesets.
         private EditorChangeHandler changeHandler;
 
+        private EditorCommandHandler commandHandler;
+
         private DependencyContainer dependencies;
 
         private bool isNewBeatmap;
@@ -256,6 +258,9 @@ namespace osu.Game.Screens.Edit
                 changeHandler = new BeatmapEditorChangeHandler(editorBeatmap);
                 dependencies.CacheAs<IEditorChangeHandler>(changeHandler);
             }
+
+            commandHandler = new EditorCommandHandler();
+            dependencies.CacheAs(commandHandler);
 
             beatDivisor.Value = editorBeatmap.BeatmapInfo.BeatDivisor;
             beatDivisor.BindValueChanged(divisor => editorBeatmap.BeatmapInfo.BeatDivisor = divisor.NewValue);
