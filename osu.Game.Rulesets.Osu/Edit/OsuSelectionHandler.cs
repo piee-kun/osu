@@ -14,6 +14,7 @@ using osu.Game.Graphics.UserInterface;
 using osu.Game.Rulesets.Edit;
 using osu.Game.Rulesets.Objects;
 using osu.Game.Rulesets.Objects.Types;
+using osu.Game.Rulesets.Osu.Edit.Commands;
 using osu.Game.Rulesets.Osu.Objects;
 using osu.Game.Rulesets.Osu.UI;
 using osu.Game.Screens.Edit.Compose.Components;
@@ -67,8 +68,8 @@ namespace osu.Game.Rulesets.Osu.Edit
             var hitObjects = selectedMovableObjects;
 
             // this will potentially move the selection out of bounds...
-            foreach (var h in hitObjects)
-                h.Position += this.ScreenSpaceDeltaToParentSpace(moveEvent.ScreenSpaceDelta);
+            var command = new MoveCommand(hitObjects, hitObjects.Select(h => h.Position + this.ScreenSpaceDeltaToParentSpace(moveEvent.ScreenSpaceDelta)));
+            CommandHandler.ApplyCommand(command);
 
             // but this will be corrected.
             moveSelectionInBounds();
@@ -243,8 +244,8 @@ namespace osu.Game.Rulesets.Osu.Edit
             if (quad.BottomRight.Y > DrawHeight)
                 delta.Y -= quad.BottomRight.Y - DrawHeight;
 
-            foreach (var h in hitObjects)
-                h.Position += delta;
+            var command = new MoveCommand(hitObjects, hitObjects.Select(h => h.Position + delta));
+            CommandHandler.ApplyCommand(command);
         }
 
         /// <summary>
