@@ -3,6 +3,7 @@
 
 #nullable disable
 
+using System;
 using osu.Framework.Allocation;
 using osu.Framework.Audio;
 using osu.Framework.Bindables;
@@ -12,6 +13,7 @@ using osu.Framework.Input.Events;
 using osu.Game.Beatmaps;
 using osu.Game.Overlays;
 using osu.Game.Screens.Edit;
+using osu.Game.Screens.Edit.Commands;
 
 namespace osu.Game.Tests.Visual
 {
@@ -86,6 +88,32 @@ namespace osu.Game.Tests.Visual
                 EditorClock.SeekForward(true);
 
             return true;
+        }
+
+        protected partial class TestCommandHandler : IEditorCommandHandler
+        {
+            public event Action OnStateChange;
+
+            public void BeginChange()
+            {
+            }
+
+            public void EndChange()
+            {
+                OnStateChange?.Invoke();
+            }
+
+            public void SaveState()
+            {
+                OnStateChange?.Invoke();
+            }
+
+            public void ApplyCommand(ICommand<EditorBeatmap> command)
+            {
+                CommandApplied?.Invoke(command);
+            }
+
+            public event Action<ICommand<EditorBeatmap>> CommandApplied;
         }
     }
 }

@@ -11,15 +11,22 @@ namespace osu.Game.Screens.Edit
     /// <summary>
     /// Tracks changes to the <see cref="Editor"/>.
     /// </summary>
-    public partial class EditorCommandHandler : TransactionalCommitComponent, IEditorChangeHandler
+    public partial class EditorCommandHandler : TransactionalCommitComponent, IEditorCommandHandler
     {
         public readonly Bindable<bool> CanUndo = new Bindable<bool>();
         public readonly Bindable<bool> CanRedo = new Bindable<bool>();
 
-        private readonly LinkedList<ICommand> undoStack = new LinkedList<ICommand>();
-        private readonly Stack<ICommand> redoStack = new Stack<ICommand>();
+        private readonly LinkedList<ICommand<EditorBeatmap>> undoStack = new LinkedList<ICommand<EditorBeatmap>>();
+        private readonly Stack<ICommand<EditorBeatmap>> redoStack = new Stack<ICommand<EditorBeatmap>>();
 
-        private CompositeCommand currentTransaction = new CompositeCommand();
+        private readonly EditorBeatmap editorBeatmap;
+
+        public EditorCommandHandler(EditorBeatmap editorBeatmap)
+        {
+            this.editorBeatmap = editorBeatmap;
+        }
+
+        private CompositeCommand<EditorBeatmap> currentTransaction = new CompositeCommand<EditorBeatmap>();
 
         public event Action? OnStateChange;
 
@@ -27,11 +34,15 @@ namespace osu.Game.Screens.Edit
 
         public const int MAX_SAVED_STATES = 50;
 
-        public void ApplyCommand(ICommand command)
+        public void ApplyCommand(ICommand<EditorBeatmap> command)
         {
-            command.Apply();
-            currentTransaction.AddCommand(command);
+            command.Apply(editorBeatmap);
+            currentTransaction?.AddCommand(command);
+
+            CommandApplied?.Invoke(command);
         }
+
+        public event Action<ICommand<EditorBeatmap>>? CommandApplied;
 
         protected override void UpdateState()
         {
@@ -46,7 +57,7 @@ namespace osu.Game.Screens.Edit
 
             undoStack.AddLast(currentTransaction);
             redoStack.Clear();
-            currentTransaction = new CompositeCommand();
+            currentTransaction = new CompositeCommand<EditorBeatmap>();
 
             OnStateChange?.Invoke();
             updateBindables();
@@ -62,7 +73,7 @@ namespace osu.Game.Screens.Edit
             isRestoring = true;
 
             undoStack.RemoveLast();
-            command.GetInverseCommand().Apply();
+            command.GetInverseCommand().Apply(editorBeatmap);
             redoStack.Push(command);
 
             isRestoring = false;
@@ -79,7 +90,7 @@ namespace osu.Game.Screens.Edit
             isRestoring = true;
 
             var command = redoStack.Pop();
-            command.Apply();
+            command.Apply(editorBeatmap);
             undoStack.AddLast(command);
 
             isRestoring = false;
