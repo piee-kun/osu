@@ -51,5 +51,7 @@ namespace osu.Game.Screens.Edit.Commands
         }
 
         public string Name => string.Join(", ", commands.Select(c => c.Name).Distinct());
+
+        public IEnumerable<object> GetTargets() => commands.SelectMany(c => c.GetTargets());
     }
 }

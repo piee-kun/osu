@@ -45,5 +45,7 @@ namespace osu.Game.Rulesets.Osu.Edit.Commands
         }
 
         public string Name => EditorStrings.MoveObjects(targets.Length).ToString();
+
+        public IEnumerable<object> GetTargets() => targets;
     }
 }
