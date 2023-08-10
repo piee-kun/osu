@@ -206,14 +206,6 @@ namespace osu.Game.Screens.Edit
         {
             command.Apply();
             CommandApplied?.Invoke(command);
-
-            foreach (object target in command.GetTargets())
-            {
-                if (target is not HitObject hitObject) continue;
-
-                batchPendingUpdates.Add(hitObject);
-                updateInProgress.Value = true;
-            }
         }
 
         /// <summary>
@@ -355,9 +347,7 @@ namespace osu.Game.Screens.Edit
         {
             base.Update();
 
-            // Only update when there are pending updates and no transaction is active.
-            // This is to avoid updating the beatmap when the user is in the middle of a drag operation, so we save performance.
-            if (batchPendingUpdates.Count > 0 && !TransactionActive)
+            if (batchPendingUpdates.Count > 0)
                 UpdateState();
 
             hasTiming.Value = !ReferenceEquals(ControlPointInfo.TimingPointAt(editorClock.CurrentTime), TimingControlPoint.DEFAULT);

@@ -1,8 +1,6 @@
 // Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
-using System.Collections.Generic;
-
 namespace osu.Game.Screens.Edit.Commands
 {
     public interface ICommand
@@ -35,11 +33,5 @@ namespace osu.Game.Screens.Edit.Commands
         /// The name of this command.
         /// </summary>
         string Name { get; }
-
-        /// <summary>
-        /// Gets the objects that are affected by this command.
-        /// </summary>
-        /// <returns>The objects that are affected by this command.</returns>
-        IEnumerable<object> GetTargets();
     }
 }
