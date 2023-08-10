@@ -15,25 +15,28 @@ namespace osu.Game.Tests.Editing
     public class EditorCommandHandlerTest
     {
         private int stateChangedFired;
-        private EditorBeatmap beatmap = null!;
+        private int hitObjectUpdatedFired;
+        private EditorBeatmap editorBeatmap = null!;
         private EditorCommandHandler handler = null!;
 
         [SetUp]
         public void SetUp()
         {
             stateChangedFired = 0;
+            hitObjectUpdatedFired = 0;
 
-            beatmap = new EditorBeatmap(new OsuBeatmap
+            editorBeatmap = new EditorBeatmap(new OsuBeatmap
             {
                 BeatmapInfo =
                 {
                     Ruleset = new OsuRuleset().RulesetInfo,
                 },
             });
-            beatmap.Add(new HitCircle { StartTime = 2760, Position = Vector2.Zero });
+            editorBeatmap.Add(new HitCircle { StartTime = 2760, Position = Vector2.Zero });
 
-            handler = new EditorCommandHandler();
+            handler = new BeatmapEditorCommandHandler(editorBeatmap);
             handler.OnStateChange += () => stateChangedFired++;
+            editorBeatmap.HitObjectUpdated += _ => hitObjectUpdatedFired++;
         }
 
         [Test]
@@ -99,6 +102,7 @@ namespace osu.Game.Tests.Editing
             Assert.That(handler.CanRedo.Value, Is.False);
             Assert.That(stateChangedFired, Is.EqualTo(3));
             assert200Pos();
+            Assert.That(hitObjectUpdatedFired, Is.EqualTo(0));
         }
 
         [Test]
@@ -124,6 +128,11 @@ namespace osu.Game.Tests.Editing
             Assert.That(handler.CanRedo.Value, Is.True);
 
             Assert.That(stateChangedFired, Is.EqualTo(2));
+            Assert.That(hitObjectUpdatedFired, Is.EqualTo(0));
+
+            editorBeatmap.SaveState();
+
+            Assert.That(hitObjectUpdatedFired, Is.EqualTo(1));
         }
 
         [Test]
@@ -241,29 +250,62 @@ namespace osu.Game.Tests.Editing
             assert100Pos();
         }
 
+        [Test]
+        public void TestUndoEditorBeatmapTransaction()
+        {
+            Assert.That(handler.CanUndo.Value, Is.False);
+            Assert.That(handler.CanRedo.Value, Is.False);
+            assert0Pos();
+
+            editorBeatmap.BeginChange();
+
+            Assert.That(stateChangedFired, Is.EqualTo(0));
+
+            move100();
+
+            Assert.That(hitObjectUpdatedFired, Is.EqualTo(0));
+
+            editorBeatmap.EndChange();
+
+            Assert.That(stateChangedFired, Is.EqualTo(1));
+            Assert.That(hitObjectUpdatedFired, Is.EqualTo(1));
+
+            Assert.That(handler.CanUndo.Value, Is.True);
+            Assert.That(handler.CanRedo.Value, Is.False);
+            assert100Pos();
+
+            handler.Undo();
+
+            Assert.That(handler.CanUndo.Value, Is.False);
+            Assert.That(handler.CanRedo.Value, Is.True);
+            assert0Pos();
+
+            Assert.That(stateChangedFired, Is.EqualTo(2));
+        }
+
         private void move100()
         {
-            handler.ApplyCommand(new MoveCommand(new[] { (OsuHitObject)beatmap.HitObjects[0] }, new[] { new Vector2(100, 100) }));
+            editorBeatmap.ApplyCommand(new MoveCommand(new[] { (OsuHitObject)editorBeatmap.HitObjects[0] }, new[] { new Vector2(100, 100) }));
         }
 
         private void move200()
         {
-            handler.ApplyCommand(new MoveCommand(new[] { (OsuHitObject)beatmap.HitObjects[0] }, new[] { new Vector2(200, 200) }));
+            editorBeatmap.ApplyCommand(new MoveCommand(new[] { (OsuHitObject)editorBeatmap.HitObjects[0] }, new[] { new Vector2(200, 200) }));
         }
 
         private void assert0Pos()
         {
-            Assert.That(((OsuHitObject)beatmap.HitObjects[0]).Position, Is.EqualTo(Vector2.Zero));
+            Assert.That(((OsuHitObject)editorBeatmap.HitObjects[0]).Position, Is.EqualTo(Vector2.Zero));
         }
 
         private void assert100Pos()
         {
-            Assert.That(((OsuHitObject)beatmap.HitObjects[0]).Position, Is.EqualTo(new Vector2(100, 100)));
+            Assert.That(((OsuHitObject)editorBeatmap.HitObjects[0]).Position, Is.EqualTo(new Vector2(100, 100)));
         }
 
         private void assert200Pos()
         {
-            Assert.That(((OsuHitObject)beatmap.HitObjects[0]).Position, Is.EqualTo(new Vector2(200, 200)));
+            Assert.That(((OsuHitObject)editorBeatmap.HitObjects[0]).Position, Is.EqualTo(new Vector2(200, 200)));
         }
     }
 }
