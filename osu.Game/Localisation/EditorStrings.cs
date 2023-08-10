@@ -119,6 +119,11 @@ namespace osu.Game.Localisation
         /// </summary>
         public static LocalisableString LimitedDistanceSnap => new TranslatableString(getKey(@"limited_distance_snap_grid"), @"Limit distance snap placement to current time");
 
+        /// <summary>
+        /// "Move {0} objects"
+        /// </summary>
+        public static LocalisableString MoveObjects(int count) => new TranslatableString(getKey(@"move_objects"), @"Move {0} objects", count);
+
         private static string getKey(string key) => $@"{prefix}:{key}";
     }
 }

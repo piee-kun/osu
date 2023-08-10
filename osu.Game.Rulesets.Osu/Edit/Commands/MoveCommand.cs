@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using osu.Game.Localisation;
 using osu.Game.Rulesets.Osu.Objects;
 using osu.Game.Screens.Edit.Commands;
 using osuTK;
@@ -43,6 +44,6 @@ namespace osu.Game.Rulesets.Osu.Edit.Commands
             newPositions = ((MoveCommand)other).newPositions;
         }
 
-        public string Description => $"move {targets.Length} hitobjects";
+        public string Description => EditorStrings.MoveObjects(targets.Length).ToString();
     }
 }
