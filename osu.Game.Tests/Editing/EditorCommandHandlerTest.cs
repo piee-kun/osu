@@ -48,13 +48,13 @@ namespace osu.Game.Tests.Editing
 
             handler.BeginChange();
 
-            Assert.That(handler.CurrentStateHash, Is.EqualTo("0:0"));
+            Assert.That(handler.VersionNumber, Is.EqualTo(0));
             Assert.That(stateChangedFired, Is.EqualTo(0));
 
             move100();
             handler.EndChange();
 
-            Assert.That(handler.CurrentStateHash, Is.EqualTo("1:0"));
+            Assert.That(handler.VersionNumber, Is.EqualTo(1));
             Assert.That(stateChangedFired, Is.EqualTo(1));
             Assert.That(handler.CanUndo.Value, Is.True);
             Assert.That(handler.CanRedo.Value, Is.False);
@@ -66,7 +66,7 @@ namespace osu.Game.Tests.Editing
             Assert.That(handler.CanRedo.Value, Is.True);
             assert0Pos();
 
-            Assert.That(handler.CurrentStateHash, Is.EqualTo("0:0"));
+            Assert.That(handler.VersionNumber, Is.EqualTo(0));
             Assert.That(stateChangedFired, Is.EqualTo(2));
         }
 
@@ -86,7 +86,7 @@ namespace osu.Game.Tests.Editing
             handler.EndChange();
 
             Assert.That(stateChangedFired, Is.EqualTo(1));
-            Assert.That(handler.CurrentStateHash, Is.EqualTo("1:0"));
+            Assert.That(handler.VersionNumber, Is.EqualTo(1));
 
             Assert.That(handler.CanUndo.Value, Is.True);
             Assert.That(handler.CanRedo.Value, Is.False);
@@ -97,7 +97,7 @@ namespace osu.Game.Tests.Editing
             Assert.That(handler.CanUndo.Value, Is.False);
             Assert.That(handler.CanRedo.Value, Is.True);
             Assert.That(stateChangedFired, Is.EqualTo(2));
-            Assert.That(handler.CurrentStateHash, Is.EqualTo("0:0"));
+            Assert.That(handler.VersionNumber, Is.EqualTo(0));
             assert0Pos();
 
             handler.Redo();
@@ -105,7 +105,7 @@ namespace osu.Game.Tests.Editing
             Assert.That(handler.CanUndo.Value, Is.True);
             Assert.That(handler.CanRedo.Value, Is.False);
             Assert.That(stateChangedFired, Is.EqualTo(3));
-            Assert.That(handler.CurrentStateHash, Is.EqualTo("1:0"));
+            Assert.That(handler.VersionNumber, Is.EqualTo(1));
             assert200Pos();
             Assert.That(hitObjectUpdatedFired, Is.EqualTo(0));
         }
@@ -176,11 +176,11 @@ namespace osu.Game.Tests.Editing
         {
             Assert.That(handler.CanUndo.Value, Is.False);
             Assert.That(handler.CanRedo.Value, Is.False);
-            Assert.That(handler.CurrentStateHash, Is.EqualTo("0:0"));
+            Assert.That(handler.VersionNumber, Is.EqualTo(0));
 
             handler.SaveState();
             Assert.That(stateChangedFired, Is.EqualTo(0));
-            Assert.That(handler.CurrentStateHash, Is.EqualTo("0:1"));
+            Assert.That(handler.VersionNumber, Is.EqualTo(0));
 
             move100();
             handler.SaveState();
@@ -188,13 +188,13 @@ namespace osu.Game.Tests.Editing
             Assert.That(handler.CanUndo.Value, Is.True);
             Assert.That(handler.CanRedo.Value, Is.False);
             Assert.That(stateChangedFired, Is.EqualTo(1));
-            Assert.That(handler.CurrentStateHash, Is.EqualTo("1:1"));
+            Assert.That(handler.VersionNumber, Is.EqualTo(1));
 
             // save a save without making any changes
             handler.SaveState();
 
             Assert.That(stateChangedFired, Is.EqualTo(1));
-            Assert.That(handler.CurrentStateHash, Is.EqualTo("1:2"));
+            Assert.That(handler.VersionNumber, Is.EqualTo(1));
 
             handler.Undo();
 
@@ -202,7 +202,7 @@ namespace osu.Game.Tests.Editing
             Assert.That(handler.CanUndo.Value, Is.False);
             Assert.That(handler.CanRedo.Value, Is.True);
             Assert.That(stateChangedFired, Is.EqualTo(2));
-            Assert.That(handler.CurrentStateHash, Is.EqualTo("0:2"));
+            Assert.That(handler.VersionNumber, Is.EqualTo(0));
         }
 
         [Test]
@@ -214,7 +214,7 @@ namespace osu.Game.Tests.Editing
 
             Assert.That(handler.CanUndo.Value, Is.False);
 
-            for (int i = 0; i < EditorChangeHandler.MAX_SAVED_STATES; i++)
+            for (int i = 0; i < EditorCommandHandler.MAX_UNDO_LENGTH; i++)
             {
                 Assert.That(stateChangedFired, Is.EqualTo(i));
 
@@ -222,15 +222,17 @@ namespace osu.Game.Tests.Editing
                 handler.SaveState();
             }
 
+            Assert.That(handler.VersionNumber, Is.EqualTo(EditorCommandHandler.MAX_UNDO_LENGTH));
             Assert.That(handler.CanUndo.Value, Is.True);
             assert100Pos();
 
-            for (int i = 0; i < EditorChangeHandler.MAX_SAVED_STATES; i++)
+            for (int i = 0; i < EditorCommandHandler.MAX_UNDO_LENGTH; i++)
             {
                 Assert.That(handler.CanUndo.Value, Is.True);
                 handler.Undo();
             }
 
+            Assert.That(handler.VersionNumber, Is.EqualTo(0));
             Assert.That(handler.CanUndo.Value, Is.False);
             assert0Pos();
         }
@@ -241,21 +243,23 @@ namespace osu.Game.Tests.Editing
             Assert.That(handler.CanUndo.Value, Is.False);
             assert0Pos();
 
-            for (int i = 0; i < EditorChangeHandler.MAX_SAVED_STATES * 2; i++)
+            for (int i = 0; i < EditorCommandHandler.MAX_UNDO_LENGTH * 2; i++)
             {
                 move100();
                 handler.SaveState();
             }
 
+            Assert.That(handler.VersionNumber, Is.EqualTo(EditorCommandHandler.MAX_UNDO_LENGTH * 2));
             Assert.That(handler.CanUndo.Value, Is.True);
             assert100Pos();
 
-            for (int i = 0; i < EditorChangeHandler.MAX_SAVED_STATES; i++)
+            for (int i = 0; i < EditorCommandHandler.MAX_UNDO_LENGTH; i++)
             {
                 Assert.That(handler.CanUndo.Value, Is.True);
                 handler.Undo();
             }
 
+            Assert.That(handler.VersionNumber, Is.EqualTo(EditorCommandHandler.MAX_UNDO_LENGTH));
             Assert.That(handler.CanUndo.Value, Is.False);
             assert100Pos();
         }
