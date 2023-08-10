@@ -16,6 +16,7 @@ using osu.Game.Beatmaps.Legacy;
 using osu.Game.Beatmaps.Timing;
 using osu.Game.Rulesets.Edit;
 using osu.Game.Rulesets.Objects;
+using osu.Game.Screens.Edit.Commands;
 using osu.Game.Skinning;
 
 namespace osu.Game.Screens.Edit
@@ -56,6 +57,11 @@ namespace osu.Game.Screens.Edit
         /// not covered by the <see cref="HitObjectAdded"/> / <see cref="HitObjectUpdated"/> / <see cref="HitObjectRemoved"/> events.
         /// </remarks>
         public event Action BeatmapReprocessed;
+
+        /// <summary>
+        /// Invoked after a <see cref="ICommand"/> has been applied to this <see cref="EditorBeatmap"/>.
+        /// </summary>
+        public event Action<ICommand> CommandApplied;
 
         /// <summary>
         /// All currently selected <see cref="HitObject"/>s.
@@ -191,6 +197,16 @@ namespace osu.Game.Screens.Edit
         private readonly List<HitObject> batchPendingDeletes = new List<HitObject>();
 
         private readonly HashSet<HitObject> batchPendingUpdates = new HashSet<HitObject>();
+
+        /// <summary>
+        /// Applies a command to the beatmap.
+        /// </summary>
+        /// <param name="command">The command to apply.</param>
+        public void ApplyCommand(ICommand command)
+        {
+            command.Apply();
+            CommandApplied?.Invoke(command);
+        }
 
         /// <summary>
         /// Perform the provided action on every selected hitobject.
