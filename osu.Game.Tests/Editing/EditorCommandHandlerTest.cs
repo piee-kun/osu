@@ -37,36 +37,72 @@ namespace osu.Game.Tests.Editing
         }
 
         [Test]
-        public void TestSaveRestoreStateUsingTransaction()
+        public void TestUndoUsingTransaction()
         {
             Assert.That(handler.CanUndo.Value, Is.False);
             Assert.That(handler.CanRedo.Value, Is.False);
-            assertOriginalPos();
+            assert0Pos();
 
             handler.BeginChange();
 
             Assert.That(stateChangedFired, Is.EqualTo(0));
 
-            addArbitraryChange();
+            move100();
             handler.EndChange();
 
             Assert.That(stateChangedFired, Is.EqualTo(1));
 
             Assert.That(handler.CanUndo.Value, Is.True);
             Assert.That(handler.CanRedo.Value, Is.False);
-            assertChangedPos();
+            assert100Pos();
 
             handler.Undo();
 
             Assert.That(handler.CanUndo.Value, Is.False);
             Assert.That(handler.CanRedo.Value, Is.True);
-            assertOriginalPos();
+            assert0Pos();
 
             Assert.That(stateChangedFired, Is.EqualTo(2));
         }
 
         [Test]
-        public void TestSaveRestoreState()
+        public void TestUndoRedoMergedCommandUsingTransaction()
+        {
+            Assert.That(handler.CanUndo.Value, Is.False);
+            Assert.That(handler.CanRedo.Value, Is.False);
+            assert0Pos();
+
+            handler.BeginChange();
+
+            Assert.That(stateChangedFired, Is.EqualTo(0));
+
+            move100();
+            move200();
+            handler.EndChange();
+
+            Assert.That(stateChangedFired, Is.EqualTo(1));
+
+            Assert.That(handler.CanUndo.Value, Is.True);
+            Assert.That(handler.CanRedo.Value, Is.False);
+            assert200Pos();
+
+            handler.Undo();
+
+            Assert.That(handler.CanUndo.Value, Is.False);
+            Assert.That(handler.CanRedo.Value, Is.True);
+            Assert.That(stateChangedFired, Is.EqualTo(2));
+            assert0Pos();
+
+            handler.Redo();
+
+            Assert.That(handler.CanUndo.Value, Is.True);
+            Assert.That(handler.CanRedo.Value, Is.False);
+            Assert.That(stateChangedFired, Is.EqualTo(3));
+            assert200Pos();
+        }
+
+        [Test]
+        public void TestSaveState()
         {
             Assert.That(handler.CanUndo.Value, Is.False);
             Assert.That(handler.CanRedo.Value, Is.False);
@@ -74,7 +110,7 @@ namespace osu.Game.Tests.Editing
             handler.SaveState();
             Assert.That(stateChangedFired, Is.EqualTo(0));
 
-            addArbitraryChange();
+            move100();
             handler.SaveState();
 
             Assert.That(stateChangedFired, Is.EqualTo(1));
@@ -95,30 +131,30 @@ namespace osu.Game.Tests.Editing
         {
             Assert.That(handler.CanUndo.Value, Is.False);
             Assert.That(handler.CanRedo.Value, Is.False);
-            assertOriginalPos();
+            assert0Pos();
 
             handler.SaveState();
             Assert.That(stateChangedFired, Is.EqualTo(0));
 
-            addArbitraryChange();
+            move100();
             handler.SaveState();
 
             Assert.That(handler.CanUndo.Value, Is.True);
             Assert.That(handler.CanRedo.Value, Is.False);
             Assert.That(stateChangedFired, Is.EqualTo(1));
-            assertChangedPos();
+            assert100Pos();
 
             // undo a change without saving
             handler.Undo();
 
             Assert.That(stateChangedFired, Is.EqualTo(2));
-            assertOriginalPos();
+            assert0Pos();
 
-            addArbitraryChange();
+            move100();
             handler.SaveState();
 
             Assert.That(stateChangedFired, Is.EqualTo(3));
-            assertChangedPos();
+            assert100Pos();
         }
 
         [Test]
@@ -130,7 +166,7 @@ namespace osu.Game.Tests.Editing
             handler.SaveState();
             Assert.That(stateChangedFired, Is.EqualTo(0));
 
-            addArbitraryChange();
+            move100();
             handler.SaveState();
 
             Assert.That(handler.CanUndo.Value, Is.True);
@@ -151,11 +187,11 @@ namespace osu.Game.Tests.Editing
         }
 
         [Test]
-        public void TestMaxStatesSaved()
+        public void TestMaxUndo()
         {
             handler.SaveState();
             Assert.That(stateChangedFired, Is.EqualTo(0));
-            assertOriginalPos();
+            assert0Pos();
 
             Assert.That(handler.CanUndo.Value, Is.False);
 
@@ -163,12 +199,12 @@ namespace osu.Game.Tests.Editing
             {
                 Assert.That(stateChangedFired, Is.EqualTo(i));
 
-                addArbitraryChange();
+                move100();
                 handler.SaveState();
             }
 
             Assert.That(handler.CanUndo.Value, Is.True);
-            assertChangedPos();
+            assert100Pos();
 
             for (int i = 0; i < EditorChangeHandler.MAX_SAVED_STATES; i++)
             {
@@ -177,23 +213,23 @@ namespace osu.Game.Tests.Editing
             }
 
             Assert.That(handler.CanUndo.Value, Is.False);
-            assertOriginalPos();
+            assert0Pos();
         }
 
         [Test]
-        public void TestMaxStatesExceeded()
+        public void TestMaxUndoExceeded()
         {
             Assert.That(handler.CanUndo.Value, Is.False);
-            assertOriginalPos();
+            assert0Pos();
 
             for (int i = 0; i < EditorChangeHandler.MAX_SAVED_STATES * 2; i++)
             {
-                addArbitraryChange();
+                move100();
                 handler.SaveState();
             }
 
             Assert.That(handler.CanUndo.Value, Is.True);
-            assertChangedPos();
+            assert100Pos();
 
             for (int i = 0; i < EditorChangeHandler.MAX_SAVED_STATES; i++)
             {
@@ -202,22 +238,32 @@ namespace osu.Game.Tests.Editing
             }
 
             Assert.That(handler.CanUndo.Value, Is.False);
-            assertChangedPos();
+            assert100Pos();
         }
 
-        private void addArbitraryChange()
+        private void move100()
         {
             handler.ApplyCommand(new MoveCommand(new[] { (OsuHitObject)beatmap.HitObjects[0] }, new[] { new Vector2(100, 100) }));
         }
 
-        private void assertOriginalPos()
+        private void move200()
+        {
+            handler.ApplyCommand(new MoveCommand(new[] { (OsuHitObject)beatmap.HitObjects[0] }, new[] { new Vector2(200, 200) }));
+        }
+
+        private void assert0Pos()
         {
             Assert.That(((OsuHitObject)beatmap.HitObjects[0]).Position, Is.EqualTo(Vector2.Zero));
         }
 
-        private void assertChangedPos()
+        private void assert100Pos()
         {
             Assert.That(((OsuHitObject)beatmap.HitObjects[0]).Position, Is.EqualTo(new Vector2(100, 100)));
+        }
+
+        private void assert200Pos()
+        {
+            Assert.That(((OsuHitObject)beatmap.HitObjects[0]).Position, Is.EqualTo(new Vector2(200, 200)));
         }
     }
 }
