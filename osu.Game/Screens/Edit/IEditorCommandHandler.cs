@@ -1,6 +1,7 @@
 // Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+using System;
 using osu.Framework.Allocation;
 using osu.Game.Screens.Edit.Commands;
 
@@ -23,5 +24,10 @@ namespace osu.Game.Screens.Edit
         /// </summary>
         /// <param name="command">The command to log.</param>
         void LogCommand(ICommand command);
+
+        /// <summary>
+        /// Fired whenever a <see cref="ICommand"/> is logged.
+        /// </summary>
+        event Action? CommandLogged;
     }
 }

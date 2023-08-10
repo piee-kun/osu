@@ -22,18 +22,20 @@ namespace osu.Game.Screens.Edit
         private CompositeCommand currentTransaction = new CompositeCommand();
 
         public event Action? OnStateChange;
+        public event Action? CommandLogged;
 
         public const int MAX_UNDO_LENGTH = 50;
 
         public void ApplyCommand(ICommand command)
         {
             command.Apply();
-            currentTransaction.AddCommand(command);
+            LogCommand(command);
         }
 
         public void LogCommand(ICommand command)
         {
             currentTransaction.AddCommand(command);
+            CommandLogged?.Invoke();
         }
 
         protected override void UpdateState()
