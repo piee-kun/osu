@@ -23,9 +23,7 @@ namespace osu.Game.Screens.Edit
 
         public event Action? OnStateChange;
 
-        private bool isRestoring;
-
-        public const int MAX_SAVED_STATES = 50;
+        public const int MAX_UNDO_LENGTH = 50;
 
         public void ApplyCommand(ICommand command)
         {
@@ -35,13 +33,10 @@ namespace osu.Game.Screens.Edit
 
         protected override void UpdateState()
         {
-            if (isRestoring)
-                return;
-
             if (currentTransaction.Count == 0)
                 return;
 
-            if (undoStack.Count >= MAX_SAVED_STATES)
+            if (undoStack.Count >= MAX_UNDO_LENGTH)
                 undoStack.RemoveFirst();
 
             undoStack.AddLast(currentTransaction);
@@ -59,13 +54,9 @@ namespace osu.Game.Screens.Edit
             if (command is null)
                 return;
 
-            isRestoring = true;
-
             undoStack.RemoveLast();
             command.GetInverseCommand().Apply();
             redoStack.Push(command);
-
-            isRestoring = false;
 
             OnStateChange?.Invoke();
             updateBindables();
@@ -76,13 +67,9 @@ namespace osu.Game.Screens.Edit
             if (redoStack.Count == 0)
                 return;
 
-            isRestoring = true;
-
             var command = redoStack.Pop();
             command.Apply();
             undoStack.AddLast(command);
-
-            isRestoring = false;
 
             OnStateChange?.Invoke();
             updateBindables();
