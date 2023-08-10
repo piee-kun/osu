@@ -34,16 +34,16 @@ namespace osu.Game.Rulesets.Osu.Edit.Commands
             return new MoveCommand(targets, oldPositions);
         }
 
-        public bool CanMerge(ICommand other)
+        public bool CanConsume(ICommand other)
         {
             return other is MoveCommand otherMoveCommand && otherMoveCommand.targets.SequenceEqual(targets);
         }
 
-        public void Merge(ICommand other)
+        public void Consume(ICommand other)
         {
             newPositions = ((MoveCommand)other).newPositions;
         }
 
-        public string Description => EditorStrings.MoveObjects(targets.Length).ToString();
+        public string Name => EditorStrings.MoveObjects(targets.Length).ToString();
     }
 }

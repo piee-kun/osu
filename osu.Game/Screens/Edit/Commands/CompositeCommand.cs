@@ -12,9 +12,9 @@ namespace osu.Game.Screens.Edit.Commands
 
         public void AddCommand(ICommand command)
         {
-            if (commands.Count > 0 && commands[^1].CanMerge(command))
+            if (commands.Count > 0 && commands[^1].CanConsume(command))
             {
-                commands[^1].Merge(command);
+                commands[^1].Consume(command);
                 return;
             }
 
@@ -43,13 +43,13 @@ namespace osu.Game.Screens.Edit.Commands
             return inverse;
         }
 
-        public bool CanMerge(ICommand other) => false;
+        public bool CanConsume(ICommand other) => false;
 
-        public void Merge(ICommand other)
+        public void Consume(ICommand other)
         {
             throw new System.NotImplementedException();
         }
 
-        public string Description => string.Join(", ", commands.Select(c => c.Description).Distinct());
+        public string Name => string.Join(", ", commands.Select(c => c.Name).Distinct());
     }
 }
