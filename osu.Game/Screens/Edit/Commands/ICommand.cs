@@ -1,18 +1,26 @@
 // Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+using System;
+using System.Collections.Generic;
+
 namespace osu.Game.Screens.Edit.Commands
 {
-    public interface ICommand
+    public interface ICommand<TContext>
     {
-        void Apply();
+        Guid Id { get; }
+        void Apply(TContext context);
 
-        ICommand GetInverseCommand();
+        ICommand<TContext> GetInverseCommand();
 
-        bool CanMerge(ICommand other);
+        bool CanMerge(ICommand<TContext> other);
 
-        void Merge(ICommand other);
+        void Merge(ICommand<TContext> other);
 
         string Description { get; }
+
+        void OnAcknowledged(TContext context);
+
+        void OnReceived(TContext context, IEnumerable<ICommand<TContext>> pendingCommands);
     }
 }

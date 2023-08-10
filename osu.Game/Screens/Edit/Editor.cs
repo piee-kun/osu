@@ -259,8 +259,8 @@ namespace osu.Game.Screens.Edit
                 dependencies.CacheAs<IEditorChangeHandler>(changeHandler);
             }
 
-            commandHandler = new EditorCommandHandler();
-            dependencies.CacheAs(commandHandler);
+            commandHandler = new EditorCommandHandler(editorBeatmap);
+            dependencies.CacheAs<IEditorCommandHandler>(commandHandler);
 
             beatDivisor.Value = editorBeatmap.BeatmapInfo.BeatDivisor;
             beatDivisor.BindValueChanged(divisor => editorBeatmap.BeatmapInfo.BeatDivisor = divisor.NewValue);

@@ -1,16 +1,19 @@
 // Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace osu.Game.Screens.Edit.Commands
 {
-    public class CompositeCommand : ICommand
+    public class CompositeCommand<TContext> : ICommand<TContext>
     {
-        private readonly List<ICommand> commands = new List<ICommand>();
+        public Guid Id { get; } = Guid.NewGuid();
 
-        public void AddCommand(ICommand command)
+        private readonly List<ICommand<TContext>> commands = new List<ICommand<TContext>>();
+
+        public void AddCommand(ICommand<TContext> command)
         {
             if (commands.Count > 0 && commands[^1].CanMerge(command))
             {
@@ -23,17 +26,17 @@ namespace osu.Game.Screens.Edit.Commands
 
         public int Count => commands.Count;
 
-        public void Apply()
+        public void Apply(TContext context)
         {
             foreach (var command in commands)
             {
-                command.Apply();
+                command.Apply(context);
             }
         }
 
-        public ICommand GetInverseCommand()
+        public ICommand<TContext> GetInverseCommand()
         {
-            var inverse = new CompositeCommand();
+            var inverse = new CompositeCommand<TContext>();
 
             for (int i = commands.Count - 1; i >= 0; i--)
             {
@@ -43,13 +46,29 @@ namespace osu.Game.Screens.Edit.Commands
             return inverse;
         }
 
-        public bool CanMerge(ICommand other) => false;
+        public bool CanMerge(ICommand<TContext> other) => false;
 
-        public void Merge(ICommand other)
+        public void Merge(ICommand<TContext> other)
         {
             throw new System.NotImplementedException();
         }
 
         public string Description => string.Join(", ", commands.Select(c => c.Description).Distinct());
+
+        public void OnAcknowledged(TContext context)
+        {
+            foreach (var command in commands)
+            {
+                command.OnAcknowledged(context);
+            }
+        }
+
+        public void OnReceived(TContext context, IEnumerable<ICommand<TContext>> pendingCommands)
+        {
+            foreach (var command in commands)
+            {
+                command.OnReceived(context, pendingCommands);
+            }
+        }
     }
 }

@@ -31,6 +31,11 @@ namespace osu.Game.Rulesets.Objects
     public class HitObject
     {
         /// <summary>
+        /// The id used for lookup in commands.
+        /// </summary>
+        public Guid Id { get; set; } = Guid.NewGuid();
+
+        /// <summary>
         /// A small adjustment to the start time of control points to account for rounding/precision errors.
         /// </summary>
         private const double control_point_leniency = 1;
