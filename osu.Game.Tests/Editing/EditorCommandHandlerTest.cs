@@ -299,12 +299,12 @@ namespace osu.Game.Tests.Editing
 
         private void move100()
         {
-            editorBeatmap.ApplyCommand(new MoveCommand(new[] { (OsuHitObject)editorBeatmap.HitObjects[0] }, new[] { new Vector2(100, 100) }));
+            editorBeatmap.ApplyCommand(new MoveCommand(editorBeatmap, new[] { (OsuHitObject)editorBeatmap.HitObjects[0] }, new[] { new Vector2(100, 100) }));
         }
 
         private void move200()
         {
-            editorBeatmap.ApplyCommand(new MoveCommand(new[] { (OsuHitObject)editorBeatmap.HitObjects[0] }, new[] { new Vector2(200, 200) }));
+            editorBeatmap.ApplyCommand(new MoveCommand(editorBeatmap, new[] { (OsuHitObject)editorBeatmap.HitObjects[0] }, new[] { new Vector2(200, 200) }));
         }
 
         private void assert0Pos()

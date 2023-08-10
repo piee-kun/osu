@@ -68,7 +68,7 @@ namespace osu.Game.Rulesets.Osu.Edit
             var hitObjects = selectedMovableObjects;
 
             // this will potentially move the selection out of bounds...
-            var command = new MoveCommand(hitObjects, hitObjects.Select(h => h.Position + this.ScreenSpaceDeltaToParentSpace(moveEvent.ScreenSpaceDelta)));
+            var command = new MoveCommand(EditorBeatmap, hitObjects, hitObjects.Select(h => h.Position + this.ScreenSpaceDeltaToParentSpace(moveEvent.ScreenSpaceDelta)));
             EditorBeatmap.ApplyCommand(command);
 
             // but this will be corrected.
@@ -244,7 +244,7 @@ namespace osu.Game.Rulesets.Osu.Edit
             if (quad.BottomRight.Y > DrawHeight)
                 delta.Y -= quad.BottomRight.Y - DrawHeight;
 
-            var command = new MoveCommand(hitObjects, hitObjects.Select(h => h.Position + delta));
+            var command = new MoveCommand(EditorBeatmap, hitObjects, hitObjects.Select(h => h.Position + delta));
             EditorBeatmap.ApplyCommand(command);
         }
 

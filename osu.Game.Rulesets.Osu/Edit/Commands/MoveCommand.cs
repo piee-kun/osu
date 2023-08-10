@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using osu.Game.Localisation;
 using osu.Game.Rulesets.Osu.Objects;
+using osu.Game.Screens.Edit;
 using osu.Game.Screens.Edit.Commands;
 using osuTK;
 
@@ -12,12 +13,14 @@ namespace osu.Game.Rulesets.Osu.Edit.Commands
 {
     public class MoveCommand : ICommand
     {
+        private readonly EditorBeatmap editorBeatmap;
         private readonly OsuHitObject[] targets;
         private readonly Vector2[] oldPositions;
         private Vector2[] newPositions;
 
-        public MoveCommand(IEnumerable<OsuHitObject> targets, IEnumerable<Vector2> newPositions)
+        public MoveCommand(EditorBeatmap editorBeatmap, IEnumerable<OsuHitObject> targets, IEnumerable<Vector2> newPositions)
         {
+            this.editorBeatmap = editorBeatmap;
             this.targets = targets.ToArray();
             oldPositions = this.targets.Select(t => t.Position).ToArray();
             this.newPositions = newPositions.ToArray();
@@ -26,12 +29,15 @@ namespace osu.Game.Rulesets.Osu.Edit.Commands
         public void Apply()
         {
             for (int i = 0; i < targets.Length; i++)
+            {
                 targets[i].Position = newPositions[i];
+                editorBeatmap.Update(targets[i]);
+            }
         }
 
         public ICommand GetInverseCommand()
         {
-            return new MoveCommand(targets, oldPositions);
+            return new MoveCommand(editorBeatmap, targets, oldPositions);
         }
 
         public bool CanConsume(ICommand other)

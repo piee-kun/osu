@@ -347,7 +347,9 @@ namespace osu.Game.Screens.Edit
         {
             base.Update();
 
-            if (batchPendingUpdates.Count > 0)
+            // Only update when there are pending updates and no transaction is active.
+            // This is to avoid updating the beatmap when the user is in the middle of a drag operation.
+            if (batchPendingUpdates.Count > 0 && !TransactionActive)
                 UpdateState();
 
             hasTiming.Value = !ReferenceEquals(ControlPointInfo.TimingPointAt(editorClock.CurrentTime), TimingControlPoint.DEFAULT);
