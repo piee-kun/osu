@@ -30,7 +30,7 @@ namespace osu.Game.Screens.Edit
         public void ApplyCommand(ICommand command)
         {
             command.Apply();
-            currentTransaction?.AddCommand(command);
+            currentTransaction.AddCommand(command);
         }
 
         protected override void UpdateState()
