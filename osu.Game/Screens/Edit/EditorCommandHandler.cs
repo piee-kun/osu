@@ -19,12 +19,20 @@ namespace osu.Game.Screens.Edit
         private readonly LinkedList<ICommand> undoStack = new LinkedList<ICommand>();
         private readonly Stack<ICommand> redoStack = new Stack<ICommand>();
 
+        private int versionNumber;
+        private int untrackedVersionNumber;
+
         private CompositeCommand currentTransaction = new CompositeCommand();
 
         public event Action? OnStateChange;
         public event Action? CommandLogged;
 
         public const int MAX_UNDO_LENGTH = 50;
+
+        /// <summary>
+        /// Fake hash representing the current visible editor state.
+        /// </summary>
+        public string CurrentStateHash => $"{versionNumber}:{untrackedVersionNumber}";
 
         public void ApplyCommand(ICommand command)
         {
@@ -41,7 +49,11 @@ namespace osu.Game.Screens.Edit
         protected override void UpdateState()
         {
             if (currentTransaction.Count == 0)
+            {
+                // Assume that there has been some untracked transaction.
+                untrackedVersionNumber++;
                 return;
+            }
 
             if (undoStack.Count >= MAX_UNDO_LENGTH)
                 undoStack.RemoveFirst();
@@ -49,6 +61,7 @@ namespace osu.Game.Screens.Edit
             undoStack.AddLast(currentTransaction);
             redoStack.Clear();
             currentTransaction = new CompositeCommand();
+            versionNumber++;
 
             OnStateChange?.Invoke();
             updateBindables();
@@ -64,6 +77,7 @@ namespace osu.Game.Screens.Edit
             undoStack.RemoveLast();
             command.GetInverseCommand().Apply();
             redoStack.Push(command);
+            versionNumber--;
 
             OnStateChange?.Invoke();
             updateBindables();
@@ -77,6 +91,7 @@ namespace osu.Game.Screens.Edit
             var command = redoStack.Pop();
             command.Apply();
             undoStack.AddLast(command);
+            versionNumber++;
 
             OnStateChange?.Invoke();
             updateBindables();
