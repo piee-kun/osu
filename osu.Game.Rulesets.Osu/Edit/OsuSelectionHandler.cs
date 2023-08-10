@@ -46,9 +46,9 @@ namespace osu.Game.Rulesets.Osu.Edit
             SelectionBox.CanReverse = EditorBeatmap.SelectedHitObjects.Count > 1 || EditorBeatmap.SelectedHitObjects.Any(s => s is Slider);
         }
 
-        protected override void OnOperationEnded()
+        protected override void EndChange()
         {
-            base.OnOperationEnded();
+            base.EndChange();
             referencePathTypes = null;
         }
 
@@ -69,7 +69,7 @@ namespace osu.Game.Rulesets.Osu.Edit
 
             // this will potentially move the selection out of bounds...
             var command = new MoveCommand(hitObjects, hitObjects.Select(h => h.Position + this.ScreenSpaceDeltaToParentSpace(moveEvent.ScreenSpaceDelta)));
-            CommandHandler.ApplyCommand(command);
+            EditorBeatmap.ApplyCommand(command);
 
             // but this will be corrected.
             moveSelectionInBounds();
@@ -245,7 +245,7 @@ namespace osu.Game.Rulesets.Osu.Edit
                 delta.Y -= quad.BottomRight.Y - DrawHeight;
 
             var command = new MoveCommand(hitObjects, hitObjects.Select(h => h.Position + delta));
-            CommandHandler.ApplyCommand(command);
+            EditorBeatmap.ApplyCommand(command);
         }
 
         /// <summary>
