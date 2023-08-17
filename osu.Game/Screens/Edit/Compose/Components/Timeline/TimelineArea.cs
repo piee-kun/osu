@@ -36,6 +36,7 @@ namespace osu.Game.Screens.Edit.Compose.Components.Timeline
             OsuCheckbox waveformCheckbox;
             OsuCheckbox controlPointsCheckbox;
             OsuCheckbox ticksCheckbox;
+            OsuCheckbox samplesCheckbox;
 
             const float padding = 10;
 
@@ -94,6 +95,11 @@ namespace osu.Game.Screens.Edit.Compose.Components.Timeline
                                                 LabelText = BeatmapsetsStrings.ShowStatsBpm,
                                                 Current = { Value = true },
                                             },
+                                            samplesCheckbox = new OsuCheckbox(nubSize: 30f)
+                                            {
+                                                LabelText = "Hitsounds",
+                                                Current = { Value = true },
+                                            }
                                         }
                                     }
                                 }
@@ -171,6 +177,7 @@ namespace osu.Game.Screens.Edit.Compose.Components.Timeline
             Timeline.WaveformVisible.BindTo(waveformCheckbox.Current);
             Timeline.ControlPointsVisible.BindTo(controlPointsCheckbox.Current);
             Timeline.TicksVisible.BindTo(ticksCheckbox.Current);
+            Timeline.SamplesVisible.BindTo(samplesCheckbox.Current);
         }
     }
 }

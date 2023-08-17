@@ -25,8 +25,10 @@ namespace osu.Game.Screens.Edit.Compose.Components.Timeline
     [Cached]
     public partial class Timeline : ZoomableScrollContainer, IPositionSnapProvider
     {
-        private const float timeline_height = 72;
-        private const float timeline_expanded_height = 94;
+        private const float control_points_height = 20;
+        private const float samples_height = 16;
+        private const float timeline_height = 58;
+        private const float timeline_expanded_height = timeline_height + control_points_height + samples_height;
 
         private readonly Drawable userContent;
 
@@ -35,6 +37,8 @@ namespace osu.Game.Screens.Edit.Compose.Components.Timeline
         public readonly Bindable<bool> ControlPointsVisible = new Bindable<bool>();
 
         public readonly Bindable<bool> TicksVisible = new Bindable<bool>();
+
+        public readonly Bindable<bool> SamplesVisible = new Bindable<bool>();
 
         [Resolved]
         private EditorClock editorClock { get; set; }
@@ -106,7 +110,7 @@ namespace osu.Game.Screens.Edit.Compose.Components.Timeline
                 controlPoints = new TimelineControlPointDisplay
                 {
                     RelativeSizeAxes = Axes.X,
-                    Height = timeline_expanded_height,
+                    Height = timeline_height + control_points_height,
                 },
                 mainContent = new Container
                 {
@@ -159,8 +163,8 @@ namespace osu.Game.Screens.Edit.Compose.Components.Timeline
             {
                 if (visible.NewValue)
                 {
-                    this.ResizeHeightTo(timeline_expanded_height, 200, Easing.OutQuint);
-                    mainContent.MoveToY(20, 200, Easing.OutQuint);
+                    this.ResizeHeightTo(getNewTimelineHeight(), 200, Easing.OutQuint);
+                    mainContent.MoveToY(27, 200, Easing.OutQuint);
 
                     // delay the fade in else masking looks weird.
                     controlPoints.Delay(180).FadeIn(400, Easing.OutQuint);
@@ -170,10 +174,30 @@ namespace osu.Game.Screens.Edit.Compose.Components.Timeline
                     controlPoints.FadeOut(200, Easing.OutQuint);
 
                     // likewise, delay the resize until the fade is complete.
-                    this.Delay(180).ResizeHeightTo(timeline_height, 200, Easing.OutQuint);
-                    mainContent.Delay(180).MoveToY(0, 200, Easing.OutQuint);
+                    this.Delay(180).ResizeHeightTo(getNewTimelineHeight(), 200, Easing.OutQuint);
+                    mainContent.Delay(180).MoveToY(7, 200, Easing.OutQuint);
                 }
             }, true);
+
+            SamplesVisible.BindValueChanged(visible =>
+            {
+                if (visible.NewValue)
+                {
+                    this.ResizeHeightTo(getNewTimelineHeight(), 200, Easing.OutQuint);
+                }
+                else
+                {
+                    this.Delay(180).ResizeHeightTo(getNewTimelineHeight(), 200, Easing.OutQuint);
+                }
+            }, true);
+        }
+
+        private float getNewTimelineHeight()
+        {
+            float height = timeline_height;
+            if (ControlPointsVisible.Value) height += control_points_height;
+            if (SamplesVisible.Value) height += samples_height;
+            return height;
         }
 
         private void updateWaveformOpacity() =>
