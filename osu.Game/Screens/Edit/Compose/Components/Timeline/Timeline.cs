@@ -28,7 +28,6 @@ namespace osu.Game.Screens.Edit.Compose.Components.Timeline
         private const float control_points_height = 20;
         private const float samples_height = 16;
         private const float timeline_height = 58;
-        private const float timeline_expanded_height = timeline_height + control_points_height + samples_height;
 
         private readonly Drawable userContent;
 

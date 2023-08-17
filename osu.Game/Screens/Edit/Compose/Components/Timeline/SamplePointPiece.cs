@@ -28,6 +28,8 @@ namespace osu.Game.Screens.Edit.Compose.Components.Timeline
 
         private readonly BindableList<HitSampleInfo> samplesBindable;
 
+        private readonly Bindable<bool> samplesVisible = new Bindable<bool>();
+
         public SamplePointPiece(HitObject hitObject)
         {
             HitObject = hitObject;
@@ -37,9 +39,22 @@ namespace osu.Game.Screens.Edit.Compose.Components.Timeline
         protected override Color4 GetRepresentingColour(OsuColour colours) => colours.Pink;
 
         [BackgroundDependencyLoader]
-        private void load()
+        private void load(Timeline timeline)
         {
             samplesBindable.BindCollectionChanged((_, _) => updateText(), true);
+
+            samplesVisible.BindTo(timeline.SamplesVisible);
+            samplesVisible.BindValueChanged(visible =>
+            {
+                if (visible.NewValue)
+                {
+                    this.Delay(180).FadeIn(400, Easing.OutQuint);
+                }
+                else
+                {
+                    this.FadeOut(200, Easing.OutQuint);
+                }
+            }, true);
         }
 
         protected override bool OnClick(ClickEvent e)
