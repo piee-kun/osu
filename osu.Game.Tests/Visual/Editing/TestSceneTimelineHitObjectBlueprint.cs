@@ -1,8 +1,6 @@
 ﻿// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
-#nullable disable
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -55,18 +53,17 @@ namespace osu.Game.Tests.Visual.Editing
         }
 
         [Test]
-        public void TestDisallowZeroDurationObjects()
+        public void TestDisallowRepeatsOnZeroDurationObjects()
         {
             DragArea dragArea;
 
-            AddStep("add spinner", () =>
+            AddStep("add zero length slider", () =>
             {
                 EditorBeatmap.Clear();
-                EditorBeatmap.Add(new Spinner
+                EditorBeatmap.Add(new Slider
                 {
                     Position = new Vector2(256, 256),
-                    StartTime = 2700,
-                    Duration = 500
+                    StartTime = 2700
                 });
             });
 
@@ -78,14 +75,15 @@ namespace osu.Game.Tests.Visual.Editing
                 InputManager.PressButton(MouseButton.Left);
             });
 
-            AddStep("try to drag bar past start", () =>
+            AddStep("try to extend drag bar", () =>
             {
                 var blueprint = this.ChildrenOfType<TimelineHitObjectBlueprint>().Single();
-                InputManager.MoveMouseTo(blueprint.SelectionQuad.TopLeft - new Vector2(100, 0));
-                InputManager.ReleaseButton(MouseButton.Left);
+                InputManager.MoveMouseTo(blueprint.SelectionQuad.TopLeft + new Vector2(100, 0));
             });
 
-            AddAssert("object has non-zero duration", () => EditorBeatmap.HitObjects.OfType<IHasDuration>().Single().Duration > 0);
+            AddStep("release button", () => InputManager.PressButton(MouseButton.Left));
+
+            AddAssert("object has zero repeats", () => EditorBeatmap.HitObjects.OfType<IHasRepeats>().Single().RepeatCount == 0);
         }
 
         [Test]
@@ -141,7 +139,7 @@ namespace osu.Game.Tests.Visual.Editing
             public double Duration { get => comboTimeObjects.Last().RelativeTime; set => comboTimeObjects.Last().RelativeTime = value; }
             public IReadOnlyList<IHasComboInformationAndRelativeTime> ComboObjects => comboTimeObjects;
             public IReadOnlyList<IHasRelativeTime> TimeObjects => comboTimeObjects;
-            public event Action TimesUpdates;
+            public event Action? TimesUpdates;
 
             private readonly BindableList<TestComboObject> comboTimeObjects = new BindableList<TestComboObject>();
 
