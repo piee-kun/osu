@@ -26,8 +26,8 @@ namespace osu.Game.Screens.Edit.Compose.Components.Timeline
     public partial class Timeline : ZoomableScrollContainer, IPositionSnapProvider
     {
         private const float control_points_height = 20;
-        private const float samples_height = 16;
-        private const float timeline_height = 58;
+        private const float samples_height = 2;
+        private const float timeline_height = 72;
 
         private readonly Drawable userContent;
 
@@ -163,7 +163,7 @@ namespace osu.Game.Screens.Edit.Compose.Components.Timeline
                 if (visible.NewValue)
                 {
                     this.ResizeHeightTo(getNewTimelineHeight(), 200, Easing.OutQuint);
-                    mainContent.MoveToY(27, 200, Easing.OutQuint);
+                    mainContent.MoveToY(20, 200, Easing.OutQuint);
 
                     // delay the fade in else masking looks weird.
                     controlPoints.Delay(180).FadeIn(400, Easing.OutQuint);
@@ -174,7 +174,7 @@ namespace osu.Game.Screens.Edit.Compose.Components.Timeline
 
                     // likewise, delay the resize until the fade is complete.
                     this.Delay(180).ResizeHeightTo(getNewTimelineHeight(), 200, Easing.OutQuint);
-                    mainContent.Delay(180).MoveToY(7, 200, Easing.OutQuint);
+                    mainContent.Delay(180).MoveToY(0, 200, Easing.OutQuint);
                 }
             }, true);
 
